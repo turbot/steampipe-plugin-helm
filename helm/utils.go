@@ -4,6 +4,9 @@ import (
 	"context"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+
+	helmClient "github.com/mittwald/go-helm-client"
+
 	"helm.sh/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 )
@@ -44,4 +47,13 @@ func parsedHelmChartUncached(ctx context.Context, d *plugin.QueryData, _ *plugin
 	}
 
 	return charts, nil
+}
+
+func getHelmClient(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (helmClient.Client, error) {
+	client, err := helmClient.New(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }

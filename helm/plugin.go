@@ -21,6 +21,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		TableMap: map[string]*plugin.Table{
 			"helm_chart_metadata": tableHelmChartMetadata(ctx),
+			"helm_release":        tableHelmRelease(ctx),
 			"helm_template":       tableHelmTemplate(ctx),
 			"helm_value":          tableHelmValue(ctx),
 		},
