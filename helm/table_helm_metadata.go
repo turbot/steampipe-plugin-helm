@@ -1,0 +1,55 @@
+package helm
+
+import (
+	"context"
+
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	// "helm.sh/helm/v3/pkg/chart/loader"
+)
+
+//// TABLE DEFINITION
+
+func tableHelmChartMetadata(ctx context.Context) *plugin.Table {
+	return &plugin.Table{
+		Name:        "helm_chart_metadata",
+		Description: "",
+		List: &plugin.ListConfig{
+			Hydrate: listHelmChartMetadata,
+		},
+		Columns: []*plugin.Column{
+			{Name: "name", Type: proto.ColumnType_STRING, Description: "The name of the chart."},
+			{Name: "api_version", Type: proto.ColumnType_STRING, Description: "The API Version of the chart."},
+			{Name: "version", Type: proto.ColumnType_STRING, Description: "A SemVer 2 conformant version string of the chart."},
+			{Name: "app_version", Type: proto.ColumnType_STRING, Description: "The version of the application enclosed inside of this chart."},
+			{Name: "description", Type: proto.ColumnType_STRING, Description: "A one-sentence description of the chart."},
+			{Name: "deprecated", Type: proto.ColumnType_BOOL, Description: "Indicates whether or not this chart is deprecated."},
+			{Name: "home", Type: proto.ColumnType_STRING, Description: "The URL to a relevant project page, git repo, or contact person."},
+			{Name: "icon", Type: proto.ColumnType_STRING, Description: "The URL to an icon file."},
+			{Name: "condition", Type: proto.ColumnType_STRING, Description: "The condition to check to enable chart."},
+			{Name: "tags", Type: proto.ColumnType_STRING, Description: "The tags to check to enable chart."},
+			{Name: "kube_version", Type: proto.ColumnType_STRING, Description: "Specifies the version of the Kubernetes."},
+			{Name: "type", Type: proto.ColumnType_STRING, Description: "Specifies the chart type. Possible values: application, or library."},
+			{Name: "sources", Type: proto.ColumnType_JSON, Description: "Source is the URL to the source code of this chart."},
+			{Name: "keywords", Type: proto.ColumnType_JSON, Description: "A list of string keywords."},
+			{Name: "maintainers", Type: proto.ColumnType_JSON, Description: "A list of name and URL/email address combinations for the maintainer(s)."},
+			{Name: "annotations", Type: proto.ColumnType_JSON, Description: "Annotations are additional mappings uninterpreted by Helm, made available for inspection by other applications."},
+			{Name: "dependencies", Type: proto.ColumnType_JSON, Description: "Dependencies are a list of dependencies for a chart."},
+		},
+	}
+}
+
+//// LIST FUNCTION
+
+func listHelmChartMetadata(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	charts, err := getParsedHelmChart(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, chart := range charts {
+		d.StreamListItem(ctx, chart.Metadata)
+	}
+
+	return nil, nil
+}
