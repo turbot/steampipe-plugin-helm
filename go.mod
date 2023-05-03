@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/mittwald/go-helm-client v0.11.3
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.4.0
+	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm v2.17.0+incompatible
 	k8s.io/helm v2.17.0+incompatible
 )
@@ -18,6 +19,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
 	github.com/Masterminds/squirrel v1.5.3 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -185,7 +187,6 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.9.1 // indirect
 	k8s.io/api v0.24.3 // indirect
 	k8s.io/apiextensions-apiserver v0.24.2 // indirect
