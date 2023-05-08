@@ -20,10 +20,10 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			Schema:      ConfigSchema,
 		},
 		TableMap: map[string]*plugin.Table{
-			"helm_chart_metadata": tableHelmChartMetadata(ctx),
-			"helm_release":        tableHelmRelease(ctx),
-			"helm_template":       tableHelmTemplate(ctx),
-			"helm_value":          tableHelmValue(ctx),
+			"helm_chart":    tableHelmChart(ctx),
+			"helm_release":  tableHelmRelease(ctx),
+			"helm_template": tableHelmTemplate(ctx),
+			"helm_value":    tableHelmValue(ctx),
 		},
 	}
 

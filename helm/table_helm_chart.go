@@ -10,12 +10,12 @@ import (
 
 //// TABLE DEFINITION
 
-func tableHelmChartMetadata(ctx context.Context) *plugin.Table {
+func tableHelmChart(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "helm_chart_metadata",
+		Name:        "helm_chart",
 		Description: "",
 		List: &plugin.ListConfig{
-			Hydrate: listHelmChartMetadata,
+			Hydrate: listHelmCharts,
 		},
 		Columns: []*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The name of the chart."},
@@ -41,7 +41,7 @@ func tableHelmChartMetadata(ctx context.Context) *plugin.Table {
 
 //// LIST FUNCTION
 
-func listHelmChartMetadata(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listHelmCharts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	charts, err := getParsedHelmChart(ctx, d)
 	if err != nil {
 		return nil, err
