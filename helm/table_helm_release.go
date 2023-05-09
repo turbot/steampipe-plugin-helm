@@ -6,7 +6,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
-	// "helm.sh/helm/v3/pkg/chart/loader"
 )
 
 //// TABLE DEFINITION
@@ -28,9 +27,9 @@ func tableHelmRelease(ctx context.Context) *plugin.Table {
 			// {Name: "last_deployed", Type: proto.ColumnType_STRING, Description: "The time when the release was last deployed.", Transform: transform.FromField("Info.LastDeployed")},
 			// {Name: "deleted", Type: proto.ColumnType_STRING, Description: "The time when this object was deleted.", Transform: transform.FromField("Info.Deleted")},
 			{Name: "notes", Type: proto.ColumnType_STRING, Description: "Contains the rendered templates/NOTES.txt if available.", Transform: transform.FromField("Info.Notes")},
-			{Name: "manifest", Type: proto.ColumnType_STRING, Description: "The string representation of the rendered template."},
 			{Name: "config", Type: proto.ColumnType_JSON, Description: "The set of extra Values added to the chart. These values override the default values inside of the chart."},
 			{Name: "labels", Type: proto.ColumnType_JSON, Description: "The labels of the release."},
+			{Name: "manifest", Type: proto.ColumnType_STRING, Description: "The string representation of the rendered template."},
 		},
 	}
 }

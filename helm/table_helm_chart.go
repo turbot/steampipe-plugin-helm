@@ -5,7 +5,7 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	// "helm.sh/helm/v3/pkg/chart/loader"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 //// TABLE DEFINITION
@@ -13,13 +13,13 @@ import (
 func tableHelmChart(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "helm_chart",
-		Description: "",
+		Description: "Metadata for a Chart file.",
 		List: &plugin.ListConfig{
 			Hydrate: listHelmCharts,
 		},
 		Columns: []*plugin.Column{
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "The name of the chart."},
-			{Name: "api_version", Type: proto.ColumnType_STRING, Description: "The API Version of the chart."},
+			{Name: "api_version", Type: proto.ColumnType_STRING, Description: "The API Version of the chart.", Transform: transform.FromField("APIVersion")},
 			{Name: "version", Type: proto.ColumnType_STRING, Description: "A SemVer 2 conformant version string of the chart."},
 			{Name: "app_version", Type: proto.ColumnType_STRING, Description: "The version of the application enclosed inside of this chart."},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "A one-sentence description of the chart."},
@@ -48,7 +48,7 @@ func listHelmCharts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 	}
 
 	for _, chart := range charts {
-		d.StreamListItem(ctx, chart.Metadata)
+		d.StreamListItem(ctx, chart.Chart.Metadata)
 	}
 
 	return nil, nil

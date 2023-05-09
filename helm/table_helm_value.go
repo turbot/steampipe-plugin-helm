@@ -1,9 +1,9 @@
 package helm
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -45,8 +45,12 @@ func listHelmValues(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 
 	for _, chart := range charts {
 		var root yaml.Node
-		valueReader := strings.NewReader(chart.Values.Raw)
-		decoder := yaml.NewDecoder(valueReader)
+		buf := new(bytes.Buffer)
+		if err := yaml.NewEncoder(buf).Encode(chart.Chart.Values); err != nil {
+			return nil, err
+		}
+
+		decoder := yaml.NewDecoder(buf)
 		err = decoder.Decode(&root)
 		if err != nil {
 			plugin.Logger(ctx).Error("helm_value.listHelmValues", "parse_error", err, "path", chart.Path)

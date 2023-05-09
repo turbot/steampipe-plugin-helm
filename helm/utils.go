@@ -6,19 +6,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 	"gopkg.in/yaml.v3"
 
 	helmClient "github.com/mittwald/go-helm-client"
 
-	"helm.sh/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 type parsedHelmChart struct {
-	chart.Chart
-	Path string
+	Chart *chart.Chart
+	Path  string
 }
 
 // Get the parsed contents of the given files.
@@ -44,11 +44,14 @@ func parsedHelmChartUncached(ctx context.Context, d *plugin.QueryData, _ *plugin
 
 	var charts []parsedHelmChart
 	for _, path := range helmConfig.Paths {
-		chart, err := chartutil.Load(path)
+		chart, err := loader.Load(path)
 		if err != nil {
 			return nil, err
 		}
-		charts = append(charts, parsedHelmChart{*chart, path})
+		charts = append(charts, parsedHelmChart{
+			Chart: chart,
+			Path:  path,
+		})
 	}
 
 	return charts, nil
