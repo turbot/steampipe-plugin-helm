@@ -217,3 +217,13 @@ func keysToSnakeCase(_ context.Context, d *transform.TransformData) (interface{}
 	}
 	return strings.Join(snakes, "."), nil
 }
+
+
+//// UTILITY FUNCTIONS
+
+func mergeMaps(m1 map[string]interface{}, m2 map[string]interface{}) map[string]interface{} {
+	for k, v := range m2 {
+			m1[k] = v
+	}
+	return m1
+}
