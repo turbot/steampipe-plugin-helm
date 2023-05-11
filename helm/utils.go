@@ -57,9 +57,19 @@ func parsedHelmChartUncached(ctx context.Context, d *plugin.QueryData, _ *plugin
 	return charts, nil
 }
 
-func getHelmClient(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (helmClient.Client, error) {
-	client, err := helmClient.New(nil)
+// getHelmClient creates  the client for Helm
+func getHelmClient(ctx context.Context, namespace string) (helmClient.Client, error) {
+	// Set the namespace if specified.
+	// By default current namespace context is used.
+	options := &helmClient.Options{}
+	if namespace != "" {
+		options.Namespace = namespace
+	}
+
+	// Create client
+	client, err := helmClient.New(options)
 	if err != nil {
+		plugin.Logger(ctx).Error("getHelmClient", "client_error", err)
 		return nil, err
 	}
 
@@ -218,12 +228,11 @@ func keysToSnakeCase(_ context.Context, d *transform.TransformData) (interface{}
 	return strings.Join(snakes, "."), nil
 }
 
-
 //// UTILITY FUNCTIONS
 
 func mergeMaps(m1 map[string]interface{}, m2 map[string]interface{}) map[string]interface{} {
 	for k, v := range m2 {
-			m1[k] = v
+		m1[k] = v
 	}
 	return m1
 }
