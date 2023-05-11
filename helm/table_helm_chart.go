@@ -13,7 +13,7 @@ import (
 func tableHelmChart(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "helm_chart",
-		Description: "Metadata for a Chart file.",
+		Description: "Metadata for a Chart file",
 		List: &plugin.ListConfig{
 			Hydrate: listHelmCharts,
 		},
@@ -28,7 +28,7 @@ func tableHelmChart(ctx context.Context) *plugin.Table {
 			{Name: "icon", Type: proto.ColumnType_STRING, Description: "The URL to an icon file."},
 			{Name: "condition", Type: proto.ColumnType_STRING, Description: "The condition to check to enable chart."},
 			{Name: "tags", Type: proto.ColumnType_STRING, Description: "The tags to check to enable chart."},
-			{Name: "kube_version", Type: proto.ColumnType_STRING, Description: "Specifies the version of the Kubernetes."},
+			{Name: "kube_version", Type: proto.ColumnType_STRING, Description: "A SemVer constraint specifying the version of Kubernetes required."},
 			{Name: "type", Type: proto.ColumnType_STRING, Description: "Specifies the chart type. Possible values: application, or library."},
 			{Name: "sources", Type: proto.ColumnType_JSON, Description: "Source is the URL to the source code of this chart."},
 			{Name: "keywords", Type: proto.ColumnType_JSON, Description: "A list of string keywords."},
@@ -49,6 +49,10 @@ func listHelmCharts(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 
 	for _, chart := range charts {
 		d.StreamListItem(ctx, chart.Chart.Metadata)
+
+		if d.RowsRemaining(ctx) == 0 {
+			return nil, nil
+		}
 	}
 
 	return nil, nil

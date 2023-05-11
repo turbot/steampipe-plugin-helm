@@ -16,7 +16,7 @@ import (
 func tableHelmValue(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "helm_value",
-		Description: "",
+		Description: "Values passed into the chart",
 		List: &plugin.ListConfig{
 			Hydrate: listHelmValues,
 		},
@@ -63,6 +63,10 @@ func listHelmValues(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 		for _, r := range rows {
 			r.Path = chart.Path
 			d.StreamListItem(ctx, r)
+
+			if d.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 	}
 

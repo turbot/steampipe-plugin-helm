@@ -20,7 +20,7 @@ import (
 func tableHelmTemplate(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "helm_template",
-		Description: "",
+		Description: "Templates defines in a specific chart directory",
 		List: &plugin.ListConfig{
 			Hydrate: listHelmTemplates,
 			KeyColumns: plugin.KeyColumnSlice{
