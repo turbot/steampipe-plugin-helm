@@ -39,6 +39,7 @@ func tableHelmRelease(ctx context.Context) *plugin.Table {
 			{Name: "version", Type: proto.ColumnType_INT, Description: "The revision of the release."},
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The current state of the release. Possible values: deployed, failed, pending-install, pending-rollback, pending-upgrade, superseded, uninstalled, uninstalling, unknown.", Transform: transform.FromField("Info.Status").Transform(transform.ToString)},
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "A human-friendly description about the release.", Transform: transform.FromField("Info.Description")},
+			{Name: "chart_name", Type: proto.ColumnType_STRING, Description: "The name of the chart that was released.", Transform: transform.FromField("Chart.Metadata.Name")},
 			{Name: "first_deployed", Type: proto.ColumnType_TIMESTAMP, Description: "The time when the release was first deployed.", Transform: transform.FromField("Info.FirstDeployed").Transform(parseDateStringToTime)},
 			{Name: "last_deployed", Type: proto.ColumnType_TIMESTAMP, Description: "The time when the release was last deployed.", Transform: transform.FromField("Info.LastDeployed").Transform(parseDateStringToTime)},
 			{Name: "deleted", Type: proto.ColumnType_TIMESTAMP, Description: "The time when this object was deleted.", Transform: transform.FromField("Info.Deleted").Transform(parseDateStringToTime)},
@@ -61,6 +62,11 @@ func listHelmReleases(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		return nil, err
 	}
 
+	chart, err := getParsedHelmChart(ctx, d)
+	if err != nil {
+		return nil, err
+	}
+
 	releaseState := action.ListAll
 	if d.EqualsQuals["status"] != nil {
 		givenState := d.EqualsQualString("status")
@@ -74,6 +80,9 @@ func listHelmReleases(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	}
 
 	for _, release := range releases {
+		if release.Chart.Metadata.Name != chart.Chart.Metadata.Name {
+			continue
+		}
 		d.StreamListItem(ctx, release)
 
 		if d.RowsRemaining(ctx) == 0 {

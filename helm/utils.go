@@ -2,6 +2,7 @@ package helm
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -22,12 +23,12 @@ type parsedHelmChart struct {
 }
 
 // Get the parsed contents of the given files.
-func getParsedHelmChart(ctx context.Context, d *plugin.QueryData) ([]parsedHelmChart, error) {
+func getParsedHelmChart(ctx context.Context, d *plugin.QueryData) (*parsedHelmChart, error) {
 	conn, err := parsedHelmChartCached(ctx, d, nil)
 	if err != nil {
 		return nil, err
 	}
-	return conn.([]parsedHelmChart), nil
+	return conn.(*parsedHelmChart), nil
 }
 
 // Cached form of the parsed file content.
@@ -37,24 +38,24 @@ var parsedHelmChartCached = plugin.HydrateFunc(parsedHelmChartUncached).Memoize(
 // be run only once per connection. Do not call this directly, use
 // getParsedHelmChart instead.
 func parsedHelmChartUncached(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (any, error) {
-	plugin.Logger(ctx).Debug("parsedHelmChartUncached", "Parsing file content...", "connection", d.Connection.Name)
-
 	// Read the config
 	helmConfig := GetConfig(d.Connection)
 
-	var charts []parsedHelmChart
-	for _, path := range helmConfig.Paths {
-		chart, err := loader.Load(path)
-		if err != nil {
-			return nil, err
-		}
-		charts = append(charts, parsedHelmChart{
-			Chart: chart,
-			Path:  path,
-		})
+	chartDir := helmConfig.ChartDir
+	if chartDir == nil {
+		return nil, fmt.Errorf("chart_dir must be passed in the config")
+	}
+	plugin.Logger(ctx).Debug("parsedHelmChartUncached", "Parsing chart", chartDir, "connection", d.Connection.Name)
+
+	chart, err := loader.Load(*chartDir)
+	if err != nil {
+		return nil, err
 	}
 
-	return charts, nil
+	return &parsedHelmChart{
+		Chart: chart,
+		Path:  *chartDir,
+	}, nil
 }
 
 // getHelmClient creates  the client for Helm
@@ -226,13 +227,4 @@ func keysToSnakeCase(_ context.Context, d *transform.TransformData) (interface{}
 		snakes = append(snakes, re.ReplaceAllString(k, "_"))
 	}
 	return strings.Join(snakes, "."), nil
-}
-
-//// UTILITY FUNCTIONS
-
-func mergeMaps(m1 map[string]interface{}, m2 map[string]interface{}) map[string]interface{} {
-	for k, v := range m2 {
-		m1[k] = v
-	}
-	return m1
 }

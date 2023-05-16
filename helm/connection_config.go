@@ -6,11 +6,15 @@ import (
 )
 
 type helmConfig struct {
-	Paths []string `cty:"paths"`
+	ChartDir      *string  `cty:"chart_dir"`
+	ValueOverride []string `cty:"value_override"`
 }
 
 var ConfigSchema = map[string]*schema.Attribute{
-	"paths": {
+	"chart_dir": {
+		Type: schema.TypeString,
+	},
+	"value_override": {
 		Type: schema.TypeList,
 		Elem: &schema.Attribute{Type: schema.TypeString},
 	},

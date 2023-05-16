@@ -38,35 +38,33 @@ func tableHelmValue(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func listHelmValues(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	charts, err := getParsedHelmChart(ctx, d)
+	chart, err := getParsedHelmChart(ctx, d)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, chart := range charts {
-		var root yaml.Node
-		buf := new(bytes.Buffer)
-		if err := yaml.NewEncoder(buf).Encode(chart.Chart.Values); err != nil {
-			return nil, err
-		}
+	var root yaml.Node
+	buf := new(bytes.Buffer)
+	if err := yaml.NewEncoder(buf).Encode(chart.Chart.Values); err != nil {
+		return nil, err
+	}
 
-		decoder := yaml.NewDecoder(buf)
-		err = decoder.Decode(&root)
-		if err != nil {
-			plugin.Logger(ctx).Error("helm_value.listHelmValues", "parse_error", err, "path", chart.Path)
-			return nil, fmt.Errorf("failed to decode content: %v", err)
-		}
+	decoder := yaml.NewDecoder(buf)
+	err = decoder.Decode(&root)
+	if err != nil {
+		plugin.Logger(ctx).Error("helm_value.listHelmValues", "parse_error", err, "path", chart.Path)
+		return nil, fmt.Errorf("failed to decode content: %v", err)
+	}
 
-		var rows Rows
-		treeToList(&root, []string{}, &rows, nil, nil, nil)
+	var rows Rows
+	treeToList(&root, []string{}, &rows, nil, nil, nil)
 
-		for _, r := range rows {
-			r.Path = chart.Path
-			d.StreamListItem(ctx, r)
+	for _, r := range rows {
+		r.Path = chart.Path
+		d.StreamListItem(ctx, r)
 
-			if d.RowsRemaining(ctx) == 0 {
-				return nil, nil
-			}
+		if d.RowsRemaining(ctx) == 0 {
+			return nil, nil
 		}
 	}
 
