@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -43,30 +44,63 @@ func listHelmValues(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 		return nil, err
 	}
 
+	config := GetConfig(d.Connection)
+
+	// Get values from default values.yaml
+	result, err := getRows(ctx, chart.Chart.Values)
+	if err != nil {
+		plugin.Logger(ctx).Error("helm_value.listHelmValues", "parse_error", err, "path", chart.Path)
+		return nil, err
+	}
+
+	for _, r := range result {
+		r.Path = chart.Path
+		d.StreamListItem(ctx, r)
+	}
+
+	if config.ValueOverride != nil {
+		for _, path := range config.ValueOverride {
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return nil, err
+			}
+
+			var values map[string]interface{}
+			err = yaml.Unmarshal(content, &values)
+			if err != nil {
+				return nil, err
+			}
+
+			data, err := getRows(ctx, values)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, r := range data {
+				r.Path = path
+				d.StreamListItem(ctx, r)
+			}
+		}
+	}
+
+	return nil, nil
+}
+
+func getRows(ctx context.Context, values map[string]interface{}) (Rows, error) {
 	var root yaml.Node
 	buf := new(bytes.Buffer)
-	if err := yaml.NewEncoder(buf).Encode(chart.Chart.Values); err != nil {
+	if err := yaml.NewEncoder(buf).Encode(values); err != nil {
 		return nil, err
 	}
 
 	decoder := yaml.NewDecoder(buf)
-	err = decoder.Decode(&root)
+	err := decoder.Decode(&root)
 	if err != nil {
-		plugin.Logger(ctx).Error("helm_value.listHelmValues", "parse_error", err, "path", chart.Path)
 		return nil, fmt.Errorf("failed to decode content: %v", err)
 	}
 
 	var rows Rows
 	treeToList(&root, []string{}, &rows, nil, nil, nil)
 
-	for _, r := range rows {
-		r.Path = chart.Path
-		d.StreamListItem(ctx, r)
-
-		if d.RowsRemaining(ctx) == 0 {
-			return nil, nil
-		}
-	}
-
-	return nil, nil
+	return rows, nil
 }
